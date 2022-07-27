@@ -539,7 +539,7 @@ void promptForEquation(bool isFunction) {
         }
 
         std::cout << "\nGraph Options:\n"
-                << " solve, s  - solve given x and y\n"
+                << " solve, s  - solve given variables\n"
                 << " new,   n  - graph a new " << equationName << '\n'
                 << " menu,  m  - return to the menu\n";
 
