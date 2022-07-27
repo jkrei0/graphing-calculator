@@ -167,7 +167,8 @@ std::vector<Token> tokenize(std::string function) {
                 case '^': newTk.type = tkType::operationPriority; break;
                 case '+':
                 case '-': newTk.type = tkType::operation; break;
-                case 'x': newTk.type = tkType::variable; break;
+                case 'x':
+                case 'y': newTk.type = tkType::variable; break;
             }
             newTk.index = out.size();
             out.push_back(newTk);
