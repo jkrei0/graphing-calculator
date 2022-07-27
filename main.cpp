@@ -9,6 +9,7 @@
 
 // change to print equation debug information
 const bool debugOutputEnabled{ false };
+const bool enableFancyLines{ false };
 
 double distance(double a, double b) {
     return std::sqrt(std::pow(a-b, 2));
@@ -423,20 +424,40 @@ std::vector<std::vector<bool>> plotEquation(const std::vector<Token>& function, 
 void drawPointsGrid(std::vector<std::vector<bool>>& pointsGrid, int startx, int starty) {
     std::vector<bool>& test123{ pointsGrid.at(0) };
 
-    for (int y{ static_cast<int>(pointsGrid.size()) - 1 }; y > 0; y--) {
+    for (int y{ static_cast<int>(pointsGrid.size()) - 2 }; y >= 0; y--) {
         int curLine{ startx + y };
 
         std::vector<bool>& row{ pointsGrid.at(y) };
-        std::vector<bool>& nextRow{ pointsGrid.at(y - 1) };
+        std::vector<bool>& prevRow{ pointsGrid.at(y + 1) };
 
         for (int x{ 0 }; x < row.size() - 1; x++) {
             bool current = row.at(x);
-            if ( row.at(x + 1) != current
-                || nextRow.at(x) != current
-                || nextRow.at(x + 1) != current
-            ) {
-                std::cout << "[]";
 
+            bool tSame{ prevRow.at(x + 1) == prevRow.at(x)};
+            bool bSame{ row.at(x + 1) == row.at(x)};
+            bool rSame{ row.at(x + 1) == prevRow.at(x + 1)};
+            bool lSame{ row.at(x) == prevRow.at(x)};
+
+            // If the other three are the same, lsame is implied
+            if ( !(bSame && tSame && rSame) && enableFancyLines ) {
+
+                if (bSame) {
+                    if (rSame) std::cout << "/ ";
+                    else if (lSame) std::cout << " \\";
+                    else std::cout << "==";
+
+                } else if (tSame) {
+                    if (rSame) std::cout << "\\ ";
+                    else if (lSame) std::cout << " /";
+                    else std::cout << "==";
+                
+                } else if (rSame || lSame) std::cout << "||";
+                else std::cout << "<>"; // idk a better way to display this
+
+            } else if ( !(bSame && tSame && rSame) ) {
+
+                std::cout << "88";
+                
             } else if (x + startx == 0) {
                 std::cout << "| ";
             } else if (curLine == 0) {
