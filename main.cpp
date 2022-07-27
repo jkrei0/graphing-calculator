@@ -239,28 +239,6 @@ double solve(std::vector<Token> function, const std::map<char, double>& variable
         selToken.numerical = k;
     } };
     std::function<double(int, char, int)> SOLVE{ [GET](int x, char oper, int y) -> double {
-        // while ((*funcPtr)[x].type == tkType::solved) {
-        //     if (x < 0) { // if it's before
-        //         x -= 1;
-        //     } else if (x > 0) { // if it's after
-        //         x += 1;
-        //     } else {
-        //         (*funcPtr)[x].type = tkType::undecided;
-        //         (*funcPtr)[x].contents = tkError::setAlreadySolved;
-        //         return 0;
-        //     }
-        // }
-        // while ((*funcPtr)[y].type == tkType::solved) {
-        //     if (y < 0) { // if it's before
-        //         y -= 1;
-        //     } else if (y > 0) { // if it's after
-        //         y += 1;
-        //     } else {
-        //         (*funcPtr)[y].type = tkType::undecided;
-        //         (*funcPtr)[y].contents = tkError::setAlreadySolved;
-        //         return 0;
-        //     }
-        // }
         double xVal{ GET(x).numerical };
         double yVal{ GET(y).numerical };
         switch (oper) {
@@ -269,6 +247,9 @@ double solve(std::vector<Token> function, const std::map<char, double>& variable
             case '*': return xVal * yVal;
             case '/': return xVal / yVal;
             case '^': return std::pow(xVal, yVal);
+            default:
+                std::cout << "\nWARNING unsupported operation type (returning 0) (solve/SOLVE)\n";
+                return 0;
         }
     } };
     std::function<bool(int)> ISVALUE{ [GET](int x) -> bool {
@@ -439,7 +420,7 @@ std::vector<std::vector<bool>> plotEquation(const std::vector<Token>& function, 
 void drawPointsGrid(std::vector<std::vector<bool>>& pointsGrid, int startx, int starty) {
     std::vector<bool>& test123{ pointsGrid.at(0) };
 
-    for (int y{ pointsGrid.size() - 1 }; y > 0; y--) {
+    for (int y{ static_cast<int>(pointsGrid.size()) - 1 }; y > 0; y--) {
         int curLine{ startx + y };
 
         std::vector<bool>& row{ pointsGrid.at(y) };
@@ -467,22 +448,27 @@ void drawPointsGrid(std::vector<std::vector<bool>>& pointsGrid, int startx, int 
 }
 
 int main() {
+    // change to print equation debug information
+    bool debugOutputEnabled{ false };
+
     std::string input{ "" };
     while (input != "exit") {
         std::string function{ getLine("Enter an equation: 0 = ") };
         std::vector<Token> tokens{ tokenize(function) };
 
-        // Debug tokenization printout
-        // std::cout << "Tokenization summary: \n";
-        // for (int i{ 0 }; i < tokens.size(); i++) {
-        //     std::cout << tkAsString(tokens[i]) << '\n';
-        //     // Do children of only the first level
-        //     if (tokens[i].type == tkType::group) {
-        //         for (int k{ 0 }; k < tokens[i].tkContents.size(); k++) {
-        //             std::cout << "  - " << tkAsString(tokens[i].tkContents[k]) << '\n';
-        //         }
-        //     }
-        // }
+        // Debug tokenization printout 
+        if (debugOutputEnabled) {
+            std::cout << "Tokenization summary: \n";
+            for (int i{ 0 }; i < tokens.size(); i++) {
+                std::cout << tkAsString(tokens[i]) << '\n';
+                // Do children of only the first level
+                if (tokens[i].type == tkType::group) {
+                    for (int k{ 0 }; k < tokens[i].tkContents.size(); k++) {
+                        std::cout << "  - " << tkAsString(tokens[i].tkContents[k]) << '\n';
+                    }
+                }
+            }
+        }
 
         std::cout << "\n ~~~~ GRAPHED FUNCTION: ~~~~ \n";
 
