@@ -446,7 +446,7 @@ void drawPointsGrid(std::vector<std::vector<bool>>& pointsGrid, int startx, int 
                 std::cout << "  ";
             }
         }
-        std::cout << " : " << curLine << " / " << y << '\n';
+        std::cout << " : " << curLine << '\n';
     }
 }
 
