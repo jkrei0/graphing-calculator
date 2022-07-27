@@ -510,7 +510,7 @@ void promptForEquation(bool isFunction) {
                 }
 
                 std::map<char, double> variables{ {'x', x}, {'y', y} };
-                std::cout << "Equation solved for x = " << x << ", y = " << y << "\n:"
+                std::cout << "Equation solved for x = " << x << ", y = " << y << ":\n"
                           << solve(tokens, variables) << "\n";
             }
         } else {
