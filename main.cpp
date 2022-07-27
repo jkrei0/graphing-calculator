@@ -384,6 +384,28 @@ void drawGraph(const std::vector<Token>& function, int start, int end, int min, 
     }
 }
 
+/** 
+ * Converts a function to an equation by encasing the function in a group and subtracting y
+ */
+std::vector<Token> functionToEquation(const std::vector<Token>& function) {
+    std::vector<Token> copy{ };
+    Token groupTk{ tkType::group, 0, "" };
+    groupTk.tkContents = function;
+    groupTk.index = 0;
+    copy.push_back(groupTk);
+    
+    Token subtrTk{ tkType::operation, 1, "-" };
+    subtrTk.index = 1;
+
+    Token yVarTk{ tkType::variable, 2, "y" };
+    yVarTk.index = 2;
+
+    copy.push_back(subtrTk);
+    copy.push_back(yVarTk);
+
+    return copy;
+}
+
 std::vector<std::vector<bool>> plotEquation(const std::vector<Token>& function, int startx, int starty, int endx, int endy) {
     std::vector<std::vector<bool>> pointsGrid{ };
     // Start points must be BEFORE end points
