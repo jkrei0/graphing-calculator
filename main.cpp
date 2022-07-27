@@ -7,6 +7,9 @@
 #include <string>
 #include <cmath>
 
+// change to print equation debug information
+const bool debugOutputEnabled{ false };
+
 double distance(double a, double b) {
     return std::sqrt(std::pow(a-b, 2));
 }
