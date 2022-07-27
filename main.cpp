@@ -450,45 +450,110 @@ void drawPointsGrid(std::vector<std::vector<bool>>& pointsGrid, int startx, int 
     }
 }
 
-int main() {
-    // change to print equation debug information
-    bool debugOutputEnabled{ false };
+/**
+ * @brief 
+ * 
+ * @param isFunction - If the user should be prompted for a function (f(x) = ) or an equation (0 = )
+ */
+void promptForEquation(bool isFunction) {
+    // The first time, immediately start with entering an equation
+    std::string input{ "new" };
+    std::vector<Token> tokens;
 
-    std::string input{ "" };
-    while (input != "exit") {
-        std::string function{ getLine("Enter an equation: 0 = ") };
-        std::vector<Token> tokens{ tokenize(function) };
+    std::string equationName{ "equation" };
+    std::string equationPrefix{ "0 = " };
+    if (isFunction) {
+        equationName = "function";
+        equationPrefix = "f(x) = ";
+    }
 
-        // Debug tokenization printout 
-        if (debugOutputEnabled) {
-            std::cout << "Tokenization summary: \n";
-            for (int i{ 0 }; i < tokens.size(); i++) {
-                std::cout << tkAsString(tokens[i]) << '\n';
-                // Do children of only the first level
-                if (tokens[i].type == tkType::group) {
-                    for (int k{ 0 }; k < tokens[i].tkContents.size(); k++) {
-                        std::cout << "  - " << tkAsString(tokens[i].tkContents[k]) << '\n';
+    while (input != "menu" && input != "m") {
+
+        if (input == "new" || input == "n") {
+            std::string function{ getLine("Enter " + equationName + ": " + equationPrefix) };
+            tokens = tokenize(function);
+        
+            if (isFunction) {
+                tokens = functionToEquation(tokens);
+            }
+
+            // Debug tokenization printout 
+            if (debugOutputEnabled) {
+                std::cout << "Tokenization summary: \n";
+                for (int i{ 0 }; i < tokens.size(); i++) {
+                    std::cout << tkAsString(tokens[i]) << '\n';
+                    // Do children of only the first level
+                    if (tokens[i].type == tkType::group) {
+                        for (int k{ 0 }; k < tokens[i].tkContents.size(); k++) {
+                            std::cout << "  - " << tkAsString(tokens[i].tkContents[k]) << '\n';
+                        }
                     }
                 }
             }
+
+            std::cout << "\n ====== Graphed " << equationName << " ====== \n";
+
+            auto pointsGrid{ plotEquation(tokens, -20, -20, 20, 20) };
+
+            drawPointsGrid( pointsGrid, -20, -20 );
+
+        } else if (input == "solve" || input == "s") {
+            if (tokens.size() < 1) {
+                std::cout << "There's no equation to solve!\n"
+                          << "Use 'new' to enter an equation first.\n";
+            } else {
+                std::cout << "Solve equation for ..\n";
+                double x{ getNumber("x value: ") };
+                double y{ 0 };
+                if (!isFunction) {
+                    y = getNumber("y value: ");
+                }
+
+                std::map<char, double> variables{ {'x', x}, {'y', y} };
+                std::cout << "Equation solved for x = " << x << ", y = " << y << "\n:"
+                          << solve(tokens, variables) << "\n";
+            }
+        } else {
+            std::cout << "Invalid option '" << input << "'. Please enter one of the following:";
         }
 
-        std::cout << "\n ~~~~ GRAPHED FUNCTION: ~~~~ \n";
+        std::cout << "\nGraph Options:\n"
+                << " solve, s  - solve given x and y\n"
+                << " new,   n  - graph a new " << equationName << '\n'
+                << " menu,  m  - return to the menu\n";
 
-        auto pointsGrid{ plotEquation(tokens, -20, -20, 20, 20) };
-        drawPointsGrid( pointsGrid, -20, -20 );
-
-        std::cout << "\nEnter a number to solve for it, or\n"
-                  << " - 'new' to graph a new function\n"
-                  << " - 'exit' to exit the program\n";
-        input = getString("Enter a number or option: ");
-        while (std::isdigit(input[0]) || input[0] == '-') {
-            std::map<char, double> variables{ {'x', std::stod(input)} };
-            std::cout << "Solved for x = " << std::stod(input) << ": " << solve(tokens, variables) << "\n";
-
-            input = getString("Enter a number or option: ");
-        }
+        input = getString("Enter an option: ");
     }
+}
+
+int main() {
+
+    std::string input{ "" };
+
+    std::cout << " ====== Welcome ======\n"
+              << "This is a graphing calculator. For source code, see https://github.com/jkrei0/graphing-calculator \n";
+
+    while (true) {
+        std::cout << "\nGraph Options:\n"
+                << " equation, e  - graph & solve equations\n"
+                << " function, f  - graph & solve functions\n"
+                << " exit,     x  - quit the program\n";
+
+        input = getString("\nEnter an option: ");
+        
+        if (input == "exit" || input == "x") {
+            break;
+
+        } else if (input == "equation" || input == "e") {
+            promptForEquation(false);
+        } else if (input == "function" || input == "f") {
+            promptForEquation(true);
+
+        } else {
+            std::cout << "Invalid option '" << input << "'. Please enter one of the following:";
+        }
     
+    }
+
     return 0;
 }
