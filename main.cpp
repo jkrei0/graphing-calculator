@@ -178,6 +178,15 @@ std::vector<Token> tokenize(std::string function) {
     return out;
 }
 
+double findVar(const char key, const std::map<char, double>& variables) {
+    const auto foundValue = variables.find(key);
+    double value{ 0 };
+    if (foundValue != variables.end()) {
+        value = foundValue->second;
+    }
+    return value;
+}
+
 double solve(std::vector<Token> function, const std::map<char, double>& variables) {
 
     const auto foundXValue = variables.find('x');
@@ -272,9 +281,7 @@ double solve(std::vector<Token> function, const std::map<char, double>& variable
         if (function[i].type == tkType::group) {
             SET(0, solve(function[i].tkContents, variables));
         } else if (function[i].type == tkType::variable) {
-            if (function[i].contents == "x") {
-                function[i].numerical = xValue;
-            } // TODO OTHER VARIABLES
+            function[i].numerical = findVar(function[i].contents[0], variables);
         }
     }
     i = 1; // reset i, next pass for ^
