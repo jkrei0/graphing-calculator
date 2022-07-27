@@ -384,10 +384,70 @@ void drawGraph(const std::vector<Token>& function, int start, int end, int min, 
     }
 }
 
+std::vector<std::vector<bool>> plotEquation(const std::vector<Token>& function, int startx, int starty, int endx, int endy) {
+    std::vector<std::vector<bool>> pointsGrid{ };
+    // Start points must be BEFORE end points
+    if (startx > endx || starty > endy) {
+        return pointsGrid;
+    }
+
+    pointsGrid.resize(endy - starty);
+
+    for (int y{ starty }; y < endy; y++) {
+        std::vector<bool>& row{ pointsGrid.at(y - starty) };
+        row.resize(endx - startx);
+
+        for (int x{ startx }; x < endx; x++) {
+            std::map<char, double> variables{ {'x', x}, {'y', y} };
+            row.at(x - startx) = solve(function, variables ) > 0;
+        }
+    }
+
+    return pointsGrid;
+}
+
+/**
+ * Draws from a 'pointsgrid' aka std::vector<std::vector<bool>>
+ * Boolean pointsgrids only contain whether the number is positive or negative
+ * Be aware: pointsgrids are laid out [y][x], for displaying/printing the graph more easily.
+ * @param pointsGrid - Can be given from the plotEquation function that returns std::vector<std::vector<bool>>
+ * @param startx - The starting (smallest) x value of the graph
+ * @param starty - The starting (smallest) y value of the graph
+ */
+void drawPointsGrid(std::vector<std::vector<bool>>& pointsGrid, int startx, int starty) {
+    std::vector<bool>& test123{ pointsGrid.at(0) };
+
+    for (int y{ pointsGrid.size() - 1 }; y > 0; y--) {
+        int curLine{ startx + y };
+
+        std::vector<bool>& row{ pointsGrid.at(y) };
+        std::vector<bool>& nextRow{ pointsGrid.at(y - 1) };
+
+        for (int x{ 0 }; x < row.size() - 1; x++) {
+            bool current = row.at(x);
+            if ( row.at(x + 1) != current
+                || nextRow.at(x) != current
+                || nextRow.at(x + 1) != current
+            ) {
+                std::cout << "[]";
+
+            } else if (x + startx == 0) {
+                std::cout << "| ";
+            } else if (curLine == 0) {
+                std::cout << "--";
+
+            } else {
+                std::cout << "  ";
+            }
+        }
+        std::cout << " : " << curLine << " / " << y << '\n';
+    }
+}
+
 int main() {
     std::string input{ "" };
     while (input != "exit") {
-        std::string function{ getLine("Enter a function: f(x) = ") };
+        std::string function{ getLine("Enter an equation: 0 = ") };
         std::vector<Token> tokens{ tokenize(function) };
 
         // Debug tokenization printout
@@ -403,7 +463,9 @@ int main() {
         // }
 
         std::cout << "\n ~~~~ GRAPHED FUNCTION: ~~~~ \n";
-        drawGraph(tokens, -20, 20, -20, 20);
+
+        auto pointsGrid{ plotEquation(tokens, -20, -20, 20, 20) };
+        drawPointsGrid( pointsGrid, -20, -20 );
 
         std::cout << "\nEnter a number to solve for it, or\n"
                   << " - 'new' to graph a new function\n"
