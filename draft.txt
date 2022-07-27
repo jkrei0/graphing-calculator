@@ -1,4 +1,9 @@
-PSUEDOCODE evaluation draft
+Psuedocode evaluation / logic draft
+
+PLEASE NOTE, this is NOT an explanation of how it works. This file is mostly a scratchpad for myself
+
+
+---
 
 note: x and y are relative to the current token. So if you are at token 3 and MARK(-1 1) it marks tokens 2 through 4
 using gn (eg g2) means token at index 2, not relative to current token.
