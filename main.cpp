@@ -438,8 +438,19 @@ void drawPointsGrid(std::vector<std::vector<bool>>& pointsGrid, int startx, int 
             bool rSame{ row.at(x + 1) == prevRow.at(x + 1)};
             bool lSame{ row.at(x) == prevRow.at(x)};
 
+            if ( debugOutputEnabled ) {
+
+                /* Graphs positive/negative values instead of a line */
+                if (current) {
+                    if (x + startx == 0 || y + starty == 0) std::cout << "**";
+                    else std::cout << "##";
+
+                } else if (x + startx == 0 || y + starty == 0) {
+                    std::cout << "++";
+                } else std::cout << "  ";
+
             // If the other three are the same, lsame is implied
-            if ( !(bSame && tSame && rSame) && enableFancyLines ) {
+            } else if ( !(bSame && tSame && rSame) && enableFancyLines ) {
 
                 if (bSame) {
                     if (rSame) std::cout << "/ ";
