@@ -22,7 +22,7 @@ Please note operations are evaluated in the order they appear
 
 ## Bugs
 Bugs nearest the top of the list are ones that will likely get fixed first
-- When entering functions, each x result appears one lower than it should be. Probably something with `functionToEquation`, probably obvious.
+
 - When entering an equation *starting* with addition or subtraction, (eg `+2` or `-x`), a segmentation fault occurs, seemlingly on line `209-210` (the very beginning of `solve->GET`)
 
   I do not know what is causing this.

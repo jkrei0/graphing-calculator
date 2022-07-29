@@ -9,7 +9,6 @@
 
 // change to print equation debug information
 bool debugOutputEnabled{ false };
-bool enableFancyLines{ false };
 
 double distance(double a, double b) {
     return std::sqrt(std::pow(a-b, 2));
@@ -406,7 +405,7 @@ std::vector<std::vector<bool>> plotEquation(const std::vector<Token>& function, 
 
         for (int x{ startx }; x < endx; x++) {
             std::map<char, double> variables{ {'x', x}, {'y', y} };
-            row.at(x - startx) = solve(function, variables ) > 0;
+            row.at(x - startx) = solve(function, variables ) >= 0;
         }
     }
 
@@ -424,19 +423,18 @@ std::vector<std::vector<bool>> plotEquation(const std::vector<Token>& function, 
 void drawPointsGrid(std::vector<std::vector<bool>>& pointsGrid, int startx, int starty) {
     std::vector<bool>& test123{ pointsGrid.at(0) };
 
-    for (int y{ static_cast<int>(pointsGrid.size()) - 2 }; y >= 0; y--) {
+    for (int y{ static_cast<int>(pointsGrid.size()) - 2 }; y > 0; y--) {
         int curLine{ startx + y };
 
         std::vector<bool>& row{ pointsGrid.at(y) };
-        std::vector<bool>& prevRow{ pointsGrid.at(y + 1) };
 
-        for (int x{ 0 }; x < row.size() - 1; x++) {
+        for (int x{ 1 }; x < row.size() - 1; x++) {
             bool current = row.at(x);
 
-            bool tSame{ prevRow.at(x + 1) == prevRow.at(x)};
-            bool bSame{ row.at(x + 1) == row.at(x)};
-            bool rSame{ row.at(x + 1) == prevRow.at(x + 1)};
-            bool lSame{ row.at(x) == prevRow.at(x)};
+            bool top{ pointsGrid.at(y + 1).at(x) };
+            bool bottom{ pointsGrid.at(y - 1).at(x) };
+            bool left{ row.at(x - 1) };
+            bool right{ row.at(x + 1) };
 
             if ( debugOutputEnabled ) {
 
@@ -449,24 +447,10 @@ void drawPointsGrid(std::vector<std::vector<bool>>& pointsGrid, int startx, int 
                     std::cout << "++";
                 } else std::cout << "  ";
 
-            // If the other three are the same, lsame is implied
-            } else if ( !(bSame && tSame && rSame) && enableFancyLines ) {
-
-                if (bSame) {
-                    if (rSame) std::cout << "/ ";
-                    else if (lSame) std::cout << " \\";
-                    else std::cout << "==";
-
-                } else if (tSame) {
-                    if (rSame) std::cout << "\\ ";
-                    else if (lSame) std::cout << " /";
-                    else std::cout << "==";
-                
-                } else if (rSame || lSame) std::cout << "||";
-                else std::cout << "<>"; // idk a better way to display this
-
-            } else if ( !(bSame && tSame && rSame) ) {
-
+            // Draw pixels on the border of - & + values, on the POSITIVE side of the border.
+            // Because: zero is counted as positive .. and the line should be as close to 0 as possible
+            // And only draw if the surrounding pixels aren't all positive
+            } else if ( current && !(top && right && left && bottom) ) {
                 std::cout << "88";
                 
             } else if (x + startx == 0) {
