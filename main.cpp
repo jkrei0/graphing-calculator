@@ -493,7 +493,7 @@ void promptForEquation(bool isFunction) {
                 tokens = functionToEquation(tokens);
             }
 
-            // Debug tokenization printout 
+            // Debug: Print a list of tokens
             if (debugOutputEnabled) {
                 std::cout << "Tokenization summary: \n";
                 for (int i{ 0 }; i < tokens.size(); i++) {
@@ -510,13 +510,12 @@ void promptForEquation(bool isFunction) {
             std::cout << "\n ====== Graphed " << equationName << " ====== \n";
 
             auto pointsGrid{ plotEquation(tokens, -20, -20, 20, 20) };
-
             drawPointsGrid( pointsGrid, -20, -20 );
 
         } else if (input == "solve" || input == "s") {
             if (tokens.size() < 1) {
                 std::cout << "There's no equation to solve!\n"
-                          << "Use 'new' to enter an equation first.\n";
+                    << "Use 'new' to enter an equation first.\n";
             } else {
                 std::cout << "Solve equation for ..\n";
                 double x{ getNumber("x value: ") };
@@ -529,16 +528,19 @@ void promptForEquation(bool isFunction) {
                 std::cout << "Equation solved for x = " << x << ", y = " << y << ":\n"
                           << solve(tokens, variables) << "\n";
             }
+
+        } else if (input == "help" || input == "h") {
+            std::cout << "\nGraph Options:\n"
+                << " new,   n  - graph a new " << equationName << '\n'
+                << " solve, s  - solve this " << equationName << " given variables\n"
+                << " help,  h  - show this list\n"
+                << " menu,  m  - return to the menu\n";
+        
         } else {
             std::cout << "Invalid option '" << input << "'. Please enter one of the following:";
         }
 
-        std::cout << "\nGraph Options:\n"
-                << " solve, s  - solve given variables\n"
-                << " new,   n  - graph a new " << equationName << '\n'
-                << " menu,  m  - return to the menu\n";
-
-        input = getString("Enter an option: ");
+        input = getString("(Type 'h' for help) Enter an option: ");
     }
 }
 
@@ -547,14 +549,12 @@ int main() {
     std::string input{ "" };
 
     std::cout << " ====== Welcome ======\n"
-              << "This is a graphing calculator. For source code, see https://github.com/jkrei0/graphing-calculator \n";
+        << "This is a graphing calculator.\n"
+        << "\nFor complete instructions, bug reports and source code see:\n"
+        <<" https://github.com/jkrei0/graphing-calculator \n";
 
+    std::cout << "\n(Type 'h' for help)\n";
     while (true) {
-        std::cout << "\nGraph Options:\n"
-                << " equation, e  - graph & solve equations\n"
-                << " function, f  - graph & solve functions\n"
-                << " exit,     x  - quit the program\n";
-
         input = getString("\nEnter an option: ");
         
         if (input == "exit" || input == "x") {
@@ -564,6 +564,15 @@ int main() {
             promptForEquation(false);
         } else if (input == "function" || input == "f") {
             promptForEquation(true);
+
+        } else if (input == "help" || input == "h") {
+            std::cout << "\nProgram Options:\n"
+                << " function, f  - graph & solve functions\n"
+                << " equation, e  - graph & solve equations\n"
+                << " help,     h  - show this list\n"
+                << " exit,     x  - quit the program\n"
+                << "\nFor complete instructions, and to report bugs, go to:\n"
+                << " https://github.com/jkrei0/graphing-calculator\n";
 
         } else {
             std::cout << "Invalid option '" << input << "'. Please enter one of the following:";

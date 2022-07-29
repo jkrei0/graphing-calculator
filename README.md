@@ -1,11 +1,13 @@
 # Graphing Calculator
 A simple c++ graphing calculator.
 
-When run, the program should give instructions for use.
+When run, type 'h' or 'help' for a list of options.
+
+When entering equations, refer to the following modes and syntax structure
 
 **Modes**
 - Equation: `0 = (your equation eg. x + 2y)`, uses `x` and `y` variables
-- Function: `f(x) = (your equation eg. 3x)`, `y` variable is treated as zero if used
+- Function: `f(x) = (your equation eg. 3x)`, solves for the `y` variable
 
 **Syntax & operations support:**
 
