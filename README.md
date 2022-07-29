@@ -9,7 +9,7 @@ When run, the program should give instructions for use.
 
 **Syntax & operations support:**
 
-Please note operations are evaluated in the order they appear
+Operations are evaluated in the order they appear in this list, then in left-to-right order.
 
 * Groups `( )` eg. `(1/2 + (x/4))`
 * Exponents `^` eg. `x^2`
