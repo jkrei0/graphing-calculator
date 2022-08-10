@@ -94,11 +94,11 @@ enum class tkType {
 };
 struct Token {
     tkType type;
-    int position;
+    unsigned int position;
     std::string contents;
     double numerical{ 0 };
     std::vector<Token> tkContents;
-    int index;
+    unsigned int index;
 };
 
 std::string tkAsString(const Token token) {
@@ -122,7 +122,7 @@ std::string tkAsString(const Token token) {
 
 std::vector<Token> tokenize(std::string function) {
     std::vector<Token> out{ };
-    for (int i{ 0 }; i < function.size(); i++) {
+    for (unsigned int i{ 0 }; i < function.size(); i++) {
         char character{ function[i] };
         // ignore whitespace
         if (std::isspace(character)) { continue; }
@@ -192,12 +192,6 @@ double findVar(const char key, const std::map<char, double>& variables) {
 
 double solve(std::vector<Token> function, const std::map<char, double>& variables) {
 
-    const auto foundXValue = variables.find('x');
-    double xValue{ 0 };
-    if (foundXValue != variables.end()) {
-        xValue = foundXValue->second;
-    }
-
     // Define i outsize the loop to use it in the lambda functions.
     int i{ 0 };
     int* iPtr{ &i };
@@ -207,13 +201,13 @@ double solve(std::vector<Token> function, const std::map<char, double>& variable
     std::function<Token&(int)> GET{ [iPtr, funcPtr](int x) -> Token& {
         int i{ *iPtr };
         if (i+x < 0) x = -i;
-        if (i+x > funcPtr->size()) x = funcPtr->size() - i;
+        if ((unsigned)(i+x) > funcPtr->size()) x = funcPtr->size() - i;
         while ((*funcPtr)[i+x].type == tkType::solved) {
             if (x < 0) { 
                 if (i+x < 1) break; // if it's at the beginning, don't go over
                 x -= 1;
             } else if (x > 0) { 
-                if (i+x > funcPtr->size()-1) break; // if it's at the end, don't go over
+                if ((unsigned)(i+x) > funcPtr->size()-1) break; // if it's at the end, don't go over
                 x += 1;
             } else break;
         }
@@ -261,7 +255,7 @@ double solve(std::vector<Token> function, const std::map<char, double>& variable
     } };
 
     // first pass for () and replace variables.
-    for (; i < function.size(); i++) {
+    for (; (unsigned)i < function.size(); i++) {
         if (function[i].type == tkType::group) {
             SET(0, solve(function[i].tkContents, variables));
         } else if (function[i].type == tkType::variable) {
@@ -269,7 +263,7 @@ double solve(std::vector<Token> function, const std::map<char, double>& variable
         }
     }
     i = 1; // reset i, next pass for ^
-    while (i < function.size()) {
+    while ((unsigned)i < function.size()) {
         Token& current{ GET(0) };
         Token& next{ GET(1) };
 
@@ -281,9 +275,8 @@ double solve(std::vector<Token> function, const std::map<char, double>& variable
         i++;
     }
     i = 1; // reset i, next pass for * /
-    while (i < function.size()) {
+    while ((unsigned)i < function.size()) {
         Token& current{ GET(0) };
-        Token& previous{ GET(-1) };
         Token& next{ GET(1) };
 
         if (ISVALUE(-1) && ISVALUE(0)) { // eg 3x
@@ -297,9 +290,8 @@ double solve(std::vector<Token> function, const std::map<char, double>& variable
         i++;
     }
     i = 0; // reset i, next pass for + -
-    while (i < function.size()) {
+    while ((unsigned)i < function.size()) {
         Token& current{ GET(0) };
-        Token& previous{ GET(-1) };
         Token& next{ GET(1) };
 
         if (current.type == tkType::operation) { // eg 4 - 5
@@ -319,7 +311,7 @@ void drawGraph(const std::vector<Token>& function, int start, int end, int min, 
     points.resize((end-start)*2);
 
     // Solve for all x-values
-    for (int i{ 0 }; i < points.size(); i++) {
+    for (int i{ 0 }; (unsigned)i < points.size(); i++) {
         double half{ static_cast<double>(i) };
         half /= 2;
 
@@ -329,7 +321,7 @@ void drawGraph(const std::vector<Token>& function, int start, int end, int min, 
     
     for (int y{ max }; y >= min; y--) {
 
-        for (int x{ 0 }; x < points.size(); x++) {
+        for (unsigned int x{ 0 }; x < points.size(); x++) {
             if (std::round(points[x]) == y) { // draw the point
                 std::cout << "o"; 
             } else {
@@ -344,17 +336,17 @@ void drawGraph(const std::vector<Token>& function, int start, int end, int min, 
                     std::cout << "'";
                 } else if (next == INFINITY || previous == INFINITY) {
                     std::cout << " ";
-                } else if ((y < previous && y > current) || (y > previous && y < current)
+                } else if ((y < previous && y > current) || ( (y > previous && y < current)
                     && y != std::round(next) && y != std::round(previous)
-                    && (distance(x, y, next, x+1) > distance(x, y, previous, x-1))) {
+                    && (distance(x, y, next, x+1) > distance(x, y, previous, x-1)) )) {
                     std::cout << "x";
 
-                } else if ((y < next && y > current) || (y > next && y < current)
+                } else if ((y < next && y > current) || ( (y > next && y < current)
                     && y != std::round(next) && y != std::round(previous)
-                    && (distance(x, y, next, x+1) < distance(x, y, previous, x-1))) {
+                    && (distance(x, y, next, x+1) < distance(x, y, previous, x-1)) )) {
                     std::cout << "x";
 
-                } else if (x == -start*2) { // draw y-axis
+                } else if (x == (unsigned)(-start*2)) { // draw y-axis
                     std::cout << "|"; 
                 } else if (y == 0) { // draw x-axis
                     std::cout << "-";
@@ -421,14 +413,13 @@ std::vector<std::vector<bool>> plotEquation(const std::vector<Token>& function, 
  * @param starty - The starting (smallest) y value of the graph
  */
 void drawPointsGrid(std::vector<std::vector<bool>>& pointsGrid, int startx, int starty) {
-    std::vector<bool>& test123{ pointsGrid.at(0) };
 
     for (int y{ static_cast<int>(pointsGrid.size()) - 2 }; y > 0; y--) {
         int curLine{ startx + y };
 
         std::vector<bool>& row{ pointsGrid.at(y) };
 
-        for (int x{ 1 }; x < row.size() - 1; x++) {
+        for (unsigned int x{ 1 }; x < row.size() - 1; x++) {
             bool current = row.at(x);
 
             bool top{ pointsGrid.at(y + 1).at(x) };
@@ -496,11 +487,11 @@ void promptForEquation(bool isFunction) {
             // Debug: Print a list of tokens
             if (debugOutputEnabled) {
                 std::cout << "Tokenization summary: \n";
-                for (int i{ 0 }; i < tokens.size(); i++) {
+                for (unsigned int i{ 0 }; i < tokens.size(); i++) {
                     std::cout << tkAsString(tokens[i]) << '\n';
                     // Do children of only the first level
                     if (tokens[i].type == tkType::group) {
-                        for (int k{ 0 }; k < tokens[i].tkContents.size(); k++) {
+                        for (unsigned int k{ 0 }; k < tokens[i].tkContents.size(); k++) {
                             std::cout << "  - " << tkAsString(tokens[i].tkContents[k]) << '\n';
                         }
                     }
