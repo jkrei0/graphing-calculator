@@ -565,11 +565,16 @@ int main() {
         } else if (input == "function" || input == "f") {
             promptForEquation(true);
 
+        } else if (input == "debug" || input == "d") {
+            debugOutputEnabled = !debugOutputEnabled;
+            std::cout << "Debug output set to " << debugOutputEnabled << '\n';
+
         } else if (input == "help" || input == "h") {
             std::cout << "\nProgram Options:\n"
                 << " function, f  - graph & solve functions\n"
                 << " equation, e  - graph & solve equations\n"
                 << " help,     h  - show this list\n"
+                << " debug,    d  - toggle debug mode\n"
                 << " exit,     x  - quit the program\n"
                 << "\nFor complete instructions, and to report bugs, go to:\n"
                 << " https://github.com/jkrei0/graphing-calculator\n";
