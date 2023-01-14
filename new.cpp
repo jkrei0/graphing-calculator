@@ -69,7 +69,7 @@ void printToken(Token tk) {
     }
 }
 
-TokenArr tokenize(std::string equation) {
+TokenArr tokenize(std::string equation, bool& error) {
     TokenArr out{ };
     const std::regex rGroup{ "^\\(" };
     const std::regex rNumber{ "^\\d+(\\.\\d+)?|\\.\\d+" };
@@ -93,7 +93,8 @@ TokenArr tokenize(std::string equation) {
                 case '/': newTk.operation = o::divide;   break;
                 case '^': newTk.operation = o::exponent; break;
                 default:
-                    std::cout << "<!> [tokenize:0] Unknown operator " << match.str() << '\n';
+                    std::cout << "<!> [tokenize:0] Unknown operator " << match.str() << "\n";
+                    error = true;
             }
             out.push_back(newTk);
 
@@ -119,9 +120,10 @@ TokenArr tokenize(std::string equation) {
             }
             if (depth > 0) {
                 std::cout << "<!> [tokenize:1] Unmatched parentheses: " << equation << '\n';
+                error = true;
                 break;
             }
-            newTk.group = tokenize(equation.substr(1, pos-1));
+            newTk.group = tokenize(equation.substr(1, pos-1), error);
             out.push_back(newTk);
             equation = equation.substr(pos, equation.size());
             
@@ -130,6 +132,7 @@ TokenArr tokenize(std::string equation) {
             if (equation.size() > 0) {
                 // It's only a problem if we're not done already.
                 std::cout << "<!> [tokenize:2] Cannot parse part of equation: " << equation << '\n';
+                error = true;
             }
             break;
         }
@@ -150,16 +153,25 @@ bool clean(TokenArr& list) {
         std::cout << "<!> [clean:0] Equation contains a trailing operator\n";
         return false;
     }
-    // First & last already checked, so loop from [1, -1]
-    for (std::size_t i{ 1 }; i < list.size()-1; i++) {
+    // First already checked, so loop from 1
+    for (std::size_t i{ 1 }; i < list.size(); i++) {
+        if (list.at(i).type != t::operation && list.at(i-1).type != t::operation) {
+            // values next to each other are implicitly multiplied
+            // insert an o::multiply operator
+            Token newTk{ t::operation };
+            newTk.operation = o::multiply;
+            list.insert(list.begin()+i, newTk);
+        }
+
+        // Anything that works on operators assumes no trailing operators
+        // and might try to access the next element.
+        if (i >= list.size()-1) break;
+
         if (list.at(i).type == t::operation &&
             list.at(i-1).type == t::operation &&
             list.at(i+1).type == t::operation)
         {
             std::cout << "<!> [clean:1] Equation contains too many successive operators (3+) at position " << i << '\n';
-            for (const Token& tk : list) {
-                printToken(tk);
-            }
             return false;
         }
 
@@ -178,9 +190,15 @@ bool clean(TokenArr& list) {
             // Edge case 3-+4 => 3+-+ 4 => Error on next check & I don't
             // have to worry about it here!
             list.at(i).operation = o::add;
+            // insert o::negate after o::add
             Token newTk{ t::operation };
             newTk.operation = o::negate;
-            list.insert(list.begin()+i, newTk);
+            list.insert(list.begin()+i+1, newTk);
+
+        } else if (list.at(i).type == t::group) {
+            // Recursively clean groups
+            // Fail if groups fails
+            if (!clean(list.at(i).group)) return false;
         }
     }
     return true;
@@ -189,10 +207,11 @@ bool clean(TokenArr& list) {
 int main() {
     std::cout << "GRAPHING CALCULATOR v2\n";
     std::string equation{ getLine("> ") };
-    TokenArr tokenized{ tokenize(equation) };
-    // if (!clean(tokenized)) {
-    //     std::cout << "<!> [main:0] Cleaning failed\n";
-    // }
+    bool error{ false };
+    TokenArr tokenized{ tokenize(equation, error) };
+    if (error || !clean(tokenized)) {
+        std::cout << "<!> [main:0] Parsing failed\n";
+    }
     for (const Token& tk : tokenized) {
         printToken(tk);
     }
