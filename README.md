@@ -57,9 +57,9 @@ Bugs nearest the top of the list are ones that will likely get fixed first
 #### Building with g++
 1. make sure you have g++ installed, then run
 
-2. `g++ main.cpp -o main`
+2. `g++ v1.cpp -o v1`
 
-3. Run `main.exe`
+3. Run `v1.exe`
 
 #### Building in VSCode
 A simple .vscode folder is included for building/debugging.
