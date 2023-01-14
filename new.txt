@@ -1,0 +1,77 @@
+DRAFT DOC for syntax/logic/etc
+==========
+
+Operations
+v + v   -> adds values
+v - v   -> subtracts values
+- v     -> negates values
+v * v   -> multiplies values
+vv      -> multiplies values
+v / v   -> divides values
+v ^ v   -> raises v1 to the v2 (exponentation)
+(v)     -> groups a value/expression
+
+==========
+
+The user enters an equation, and the following happens:
+
+The interpreter first tokenizes the equation into the following
+categories:
+group    -> NO REGEX /\\(/
+            Opening parenthesis, anything else, and a matching
+            closing parenthesis. If parentheses are unmatched,
+            an error is raised.
+number   -> /\d+(.\d+)?|.\d+/
+            Optionally one or more digits optionally followed
+            by a period and one or more digits. The number must
+            contain at least one digit.
+operator -> /\+|-|\*|\/|\^/
+            One of +, -, *, /, or ^ characters
+variable -> /[a-z]/
+            Exactly one lowercase letter
+* spaces are ignored and other extra characters raise an error
+
+any - operator immediately preceded by a value has a + operator
+placed before it. (These - operators are acting as subtraction
+operators). This turns eg 3-4 into 3+-4 which still gives the
+same result but means the - operator solely performs negation.
+
+Any two values (numbers or variables )
+
+It then splits the equation at the _lowest_ precedence operator
+in the following list:
++ lowest
+*
+/
+^
+- 
+() highest
+
+The negation operator is highest precedence as it is easiest to
+negate any negative numbers first, and then do calculations
+rather than having to keep track of the negative.
+
+The interpreter then takes both split sides, and:
+ - If any side only has a value remaining, it adds the value as
+    the respective child of the original operator.
+ - If any side still has operators to resolve, it continues
+    splitting it and appends the created tree as the respective
+    child of the original operator.
+
+This creates a tree, which would look similar to the following:
+
+INPUT
+(2+-3)*5*x
+
+TREE
+multiplication
+   group
+      addition
+         2
+         -3
+   multiplication
+      5
+      x
+
+Each operation in the tree is resolved, starting from the
+bottom until solving is complete.
