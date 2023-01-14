@@ -245,7 +245,7 @@ double solve(std::vector<Token> function, const std::map<char, double>& variable
             case '/': return xVal / yVal;
             case '^': return std::pow(xVal, yVal);
             default:
-                std::cout << "\nWARNING unsupported operation type (returning 0) (solve/SOLVE)\n";
+                std::cout << "\nWARNING unsupported operation type " << oper << " (returning 0) (solve/SOLVE)\n";
                 return 0;
         }
     } };
@@ -397,7 +397,13 @@ std::vector<std::vector<bool>> plotEquation(const std::vector<Token>& function, 
 
         for (int x{ startx }; x < endx; x++) {
             std::map<char, double> variables{ {'x', x}, {'y', y} };
+            //std::cout << x - startx << ',' << y - starty << '\n';
+            if (x - startx == y - starty) {
+                std::string pl{ };
+            }
             row.at(x - startx) = solve(function, variables ) >= 0;
+            ;
+            ;
         }
     }
 
