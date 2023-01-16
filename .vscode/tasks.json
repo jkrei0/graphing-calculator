@@ -9,6 +9,8 @@
                 "-g",
                 "${file}",
                 "-Wall",
+                "-std=c++20",
+                "-static-libstdc++",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],

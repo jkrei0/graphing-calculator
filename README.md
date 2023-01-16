@@ -57,7 +57,7 @@ Bugs nearest the top of the list are ones that will likely get fixed first
 #### Building with g++
 1. make sure you have g++ installed, then run
 
-2. `g++ v1.cpp -o v1`
+2. `g++ v1.cpp -o v1 -std=c++20`
 
 3. Run `v1.exe`
 
