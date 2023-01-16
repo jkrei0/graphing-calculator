@@ -19,12 +19,12 @@
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
-                    "text": "enable pretty printing",
+                    "text": "-enable-pretty-printing",
                     "ignoreFailures": false
                 },
                 {
                     "description": "Enable all-exceptions",
-                    "text": "catch throw",
+                    "text": "-catch-throw",
                     "ignoreFailures": false
                 },
                 {
