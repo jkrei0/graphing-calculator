@@ -8,6 +8,8 @@
 #include <cmath>
 #include <limits>
 #include <iomanip>
+#include <cmath>
+#include <numbers>
 
 std::string getLine(std::string prompt) {
     std::string input{ };
@@ -49,7 +51,8 @@ enum class o {
     negate,
     multiply,
     divide,
-    exponent
+    exponent,
+    function
 };
 enum class t {
     none,
@@ -63,6 +66,7 @@ struct Token {
     std::vector<Token> group{ };
     double number{ 0 };
     o operation{ o::none };
+    std::string function{ };
     char variable{ '&' };
 };
 using TokenArr = std::vector<Token>;
@@ -85,6 +89,7 @@ struct TreeItem {
     double value{ 0 };
     char variable{ '&' };
     o operation{ o::none };
+    std::string function{ };
     TreeItem* left{ nullptr };
     TreeItem* right{ nullptr };
 };
@@ -108,11 +113,12 @@ std::string oAsString(o name) {
         case o::multiply: return "multiply";
         case o::divide: return "divide";
         case o::exponent: return "exponent";
+        case o::function: return "function";
         default: return "o?";
     }
 }
 void printToken(Token tk) {
-    std::cout << tAsString(tk.type) << "= " << oAsString(tk.operation) << ", " << tk.number << ", " << tk.variable << "\n";
+    std::cout << tAsString(tk.type) << "= " << oAsString(tk.operation) << ", " << tk.number << ", " << tk.variable << ", f" << tk.function << "\n";
     if (tk.type == t::group) {
         for (const Token& child : tk.group) {
            std::cout << "    ";
@@ -128,6 +134,7 @@ TokenArr tokenize(std::string equation, bool& error) {
     const std::regex rNumber{ "^(\\d+(\\.\\d+)?|\\.\\d+)" };
     const std::regex rOperator{ "^(\\+|-|\\*|\\/|\\^)" };
     const std::regex rVariable{ "^[a-z]" };
+    const std::regex rFunction{ "^[A-Z]+" };
     const std::regex rWhitespace{ "^ +" };
     std::smatch match;
 
@@ -154,6 +161,12 @@ TokenArr tokenize(std::string equation, bool& error) {
         } else if (std::regex_search(equation, match, rVariable)) {
             Token newTk{ t::variable };
             newTk.variable = match.str().at(0);
+            out.push_back(newTk);
+            
+        } else if (std::regex_search(equation, match, rFunction)) {
+            Token newTk{ t::operation };
+            newTk.function = match.str();
+            newTk.operation = o::function;
             out.push_back(newTk);
             
         } else if (std::regex_search(equation, match, rGroup)) {
@@ -189,8 +202,13 @@ TokenArr tokenize(std::string equation, bool& error) {
             }
             break;
         }
-
-        equation = equation.substr(match.length(), equation.size());
+        try {
+            equation = equation.substr(match.length(), equation.size());
+        } catch (std::out_of_range) {
+            std::cout << "<!> [tokenize:3] Abrupt end of equation! " << equation << '\n';
+            error = true;
+            return out;
+        }
     }
 
     return out;
@@ -199,6 +217,14 @@ TokenArr tokenize(std::string equation, bool& error) {
  * - replaces o::subtract with o::negate or o::add o::negate
  */
 bool clean(TokenArr& list) {
+    if (list.size() < 1) {
+        std::cout << "(I) [clean:2] Equation or group is zero-length, adding implicit 0.\n";
+        Token newTk{ t::number };
+        newTk.number = 0;
+        list.push_back(newTk);
+        return true;
+    }
+
     // Special case if the list starts with o::subtract
     if (list.at(0).operation == o::subtract) {
         list.at(0).operation = o::negate;
@@ -219,7 +245,8 @@ bool clean(TokenArr& list) {
         // So we skip the first (0th) element now.
         if (i == 0) continue;
 
-        if (list.at(i).type != t::operation && list.at(i-1).type != t::operation) {
+        // --> functions are unary, so, eg 8SINx => 8*SINx
+        if ((list.at(i).type != t::operation || list.at(i).operation == o::function) && list.at(i-1).type != t::operation) {
             // values next to each other are implicitly multiplied
             // insert an o::multiply operator
             Token newTk{ t::operation };
@@ -275,12 +302,14 @@ TreeItem buildTree(const TokenArr& list) {
         o::multiply,
         o::divide,
         o::exponent,
-        o::negate
+        o::negate,
+        o::function
     };
     for (const o currentOperation : orderedOperations) {
         for (std::size_t i{ 0 }; i < list.size(); i++) {
             if (list.at(i).type == t::operation && list.at(i).operation == currentOperation) {
                 root.operation = currentOperation;
+                root.function = list.at(i).function;
                 TokenArr left{ };
                 TokenArr right{ };
                 // copy both sides into new vectors
@@ -329,6 +358,7 @@ void printTree(const TreeItem& item, int indentation = 0, std::string pos = "0")
               << "  variable: " << item.variable
               << "  isVariable: " << item.isVariable
               << "  solved: " << item.solved
+              << "  function: " << item.function
               << "\n";
     if (item.left != nullptr) {
         printTree(*item.left, indentation + 1, "L");
@@ -338,7 +368,53 @@ void printTree(const TreeItem& item, int indentation = 0, std::string pos = "0")
     }
 }
 
-double solveOperation(o oper, double left, double right) {
+double doFunction(std::string name, double value = 0) {
+    static double _logbase{ 2 };
+    static double _modbase{ 3 };
+    // No NTHROOT function because you can do that with x^(1/y)
+    // Trigonometry
+    if      (name == "SIN")   return std::sin(value);
+    else if (name == "ASIN")  return std::asin(value);
+    else if (name == "COS")   return std::cos(value);
+    else if (name == "ACOS")  return std::acos(value);
+    else if (name == "TAN")   return std::tan(value);
+    else if (name == "ATAN")  return std::atan(value);
+    // Roots
+    else if (name == "SQRT")  return std::sqrt(value);
+    else if (name == "CBRT")  return std::pow(value, 1/3);
+    // Logarithms
+    else if (name == "SETN")  {
+        _logbase = value; // Because functions can't take two arguments, 'n'
+        return 0;         // must be set before using LOGN
+    }
+    else if (name == "LOG")   return std::log10(value);
+    else if (name == "LOGE")  return std::log(value);
+    else if (name == "LOGN")  return std::log(value) / std::log(_logbase);
+    // Etc
+    else if (name == "ABS" && value >= 0)  return value;
+    else if (name == "ABS" && value < 0)   return -value;
+    else if (name == "SIGN" && value > 0)  return 1;
+    else if (name == "SIGN" && value == 0) return 0;
+    else if (name == "SIGN" && value < 0)  return -1;
+    // Modulo
+    else if (name == "EVEN")  return std::fmod(value, 2);
+    else if (name == "SETM")  {
+        _modbase = value; // Because functions can't take two arguments, 'n'
+        return 0;         // must be set before using LOGN
+    }
+    else if (name == "MOD")  return std::fmod(value, _modbase);
+    // Math constants
+    else if (name == "PI" && value != 0)  return std::numbers::pi * value;
+    else if (name == "PI")    return std::numbers::pi;
+    else if (name == "E" && value != 0)  return std::numbers::e * value;
+    else if (name == "E")     return std::numbers::e;
+    else {
+        std::cout << "<?> Unknown function " << name << "\n";
+        return 0;
+    }
+}
+
+double solveOperation(o oper, double left, double right, std::string function = "") {
     switch(oper) {
         case o::add: return left + right;
         case o::subtract: std::cout << "HOW DID A SUBTRACT GET IN HERE\n"; return left - right;
@@ -346,6 +422,7 @@ double solveOperation(o oper, double left, double right) {
         case o::multiply: return left * right;
         case o::divide: return left / right;
         case o::exponent: return std::pow(left, right);
+        case o::function: return doFunction(function, right);
         case o::none:
         default: std::cout << "<?> [solveOperation:0] Unknown operation " << oAsString(oper) << ".\n"; return right;
     }
@@ -353,7 +430,12 @@ double solveOperation(o oper, double left, double right) {
 double solveTree(const TreeItem& item, std::map<char, double> variables) {
     double left{ 0 };
     double right{ 0 };
-    for (const int i : {0, 1}) {
+    // {0, 1} so right happens first and
+    // Eg LOGN(SETN(4)+ x*LOGN(SETN(5)+ y))
+    // would set N to 5 AFTER 4 and the original log would use 4.
+    // If the left is evaluated last, LOGN(SETN(x)+ ... will always 
+    // be log base x
+    for (const int i : {1, 0}) {
         double* v{ &left };
         TreeItem* side{ item.left };
         if (i == 1) {
@@ -370,7 +452,7 @@ double solveTree(const TreeItem& item, std::map<char, double> variables) {
             }
         }
     }
-    return solveOperation(item.operation, left, right);
+    return solveOperation(item.operation, left, right, item.function);
 }
 
 Grid createGrid(const TreeItem& equation, const Grid& settings) {
@@ -456,9 +538,6 @@ int main() {
         std::cout << "(I) Cleaning equation...\n";
         if (error || !clean(tokenized)) {
             std::cout << "<!> [main:0] Parsing failed\n";
-            for (const Token& tk : tokenized) {
-                printToken(tk);
-            }
             continue;
         }
 

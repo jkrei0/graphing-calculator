@@ -12,6 +12,7 @@ When you run, the program will prompt you for an equation. It will accept any im
 - Numbers: `123`, `123.456`, `0.123`, `.123`, `123.0`
 - Operators: `+`, `-` (subtract and negate), `*`, `/`, `^` (exponent)
 - Multiplication also happens when two values are next to each other, eg `xy`, `3x` or even `3 4`
+- Functions: `SIN(x)`, `PI()` - Constants and functions. See FUNCTIONS.md
 - Spaces are ignored
   
 The calculator follows order of operations when solving equations, and
@@ -40,6 +41,7 @@ If you want to use it:
 3. Open the `new.cpp` file in the editor
 4. Click `Run -> Start Debugging` or press `F5`
 
+**An overview of the program logic is provided in new.txt**
 ---
 ---
 

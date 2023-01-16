@@ -1,4 +1,5 @@
 DRAFT DOC for syntax/logic/etc
+(does not contain function logic - see FUNCTIONS.md)
 ==========
 
 Operations
@@ -75,3 +76,12 @@ multiplication
 
 Each operation in the tree is resolved, starting from the
 bottom until solving is complete.
+
+==========
+
+To graph the equation, the program computes values for each point on the graph (anywhere on the graph, not just the function).
+Then, it looks at the neighbors of each point. If at least two of the neighbors is of the opposite sign, it draws an 8 (large point)
+However, this leaves large open areas in the graph, so if only one of the neighbors is of the opposite sign, it draws a * (small point)
+This creates good graphs for most continuous functions, even though it creates somewhat "fat" lines.
+Problems arise with discontinuous functions: Vertical lines are drawn at asymptotes and discontinuities even though they should not be.
+
