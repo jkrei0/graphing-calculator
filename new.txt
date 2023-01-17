@@ -32,16 +32,14 @@ variable -> /[a-z]/
             Exactly one lowercase letter
 * spaces are ignored and other extra characters raise an error
 
-any - operator immediately preceded by a value has a + operator
-placed before it. (These - operators are acting as subtraction
-operators). This turns eg 3-4 into 3+-4 which still gives the
-same result but means the - operator solely performs negation.
+Subtraction operators not subtracting anything (have no left value) are replaced with negation operators.
 
 Any two values (numbers or variables )
 
 It then splits the equation at the _lowest_ precedence operator
 in the following list:
 + lowest
+-
 *
 /
 ^
@@ -66,7 +64,7 @@ INPUT
 
 TREE
 multiplication
-   group
+   [group] (does not actually appear in the tree - only its child)
       addition
          2
          -3

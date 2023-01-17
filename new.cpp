@@ -275,17 +275,6 @@ bool clean(TokenArr& list) {
             // Eg 3+(subtract)4 => 3+(negate)4
             list.at(i).operation = o::negate;
 
-        } else if (list.at(i).operation == o::subtract) {
-            // Previous now must be a value
-            // Eg 3(subtract)4 => 3+(negate)4
-            // Edge case 3-+4 => 3+-+ 4 => Error on next check & I don't
-            // have to worry about it here!
-            list.at(i).operation = o::add;
-            // insert o::negate after o::add
-            Token newTk{ t::operation };
-            newTk.operation = o::negate;
-            list.insert(list.begin()+i+1, newTk);
-
         }
     }
     return true;
@@ -299,6 +288,7 @@ TreeItem buildTree(const TokenArr& list) {
 
     std::vector<o> orderedOperations{ 
         o::add,
+        o::subtract,
         o::multiply,
         o::divide,
         o::exponent,
@@ -417,7 +407,7 @@ double doFunction(std::string name, double value = 0) {
 double solveOperation(o oper, double left, double right, std::string function = "") {
     switch(oper) {
         case o::add: return left + right;
-        case o::subtract: std::cout << "HOW DID A SUBTRACT GET IN HERE\n"; return left - right;
+        case o::subtract: return left - right;
         case o::negate: return -right;
         case o::multiply: return left * right;
         case o::divide: return left / right;

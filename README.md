@@ -22,9 +22,8 @@ does so in the following order from left to right:
 - Exponentation
 - Multiplication
 - Division
+- Subtraction
 - Addition
-
-Subtraction is absent from this list because any subtraction `a-b` is first turned into an add and negate `a+-b`.
 
 ---
 
