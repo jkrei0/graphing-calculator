@@ -204,7 +204,7 @@ TokenArr tokenize(std::string equation, bool& error) {
         }
         try {
             equation = equation.substr(match.length(), equation.size());
-        } catch (std::out_of_range) {
+        } catch (std::out_of_range const&) {
             std::cout << "<!> [tokenize:3] Abrupt end of equation! " << equation << '\n';
             error = true;
             return out;
@@ -462,8 +462,8 @@ Grid createGrid(const TreeItem& equation, const Grid& settings) {
         throw std::invalid_argument("Grid start positions must be less than end positions");
     }
 
-    int xSteps{ (out.endX - out.startX)/out.stepX + 1 }; // +1 b/c grid ranges are inclusive
-    int ySteps{ (out.endY - out.startY)/out.stepY + 1 };
+    int xSteps{ (int)std::floor((out.endX - out.startX)/out.stepX + 1) }; // +1 b/c grid ranges are inclusive
+    int ySteps{ (int)std::floor((out.endY - out.startY)/out.stepY + 1) };
 
     // clear any points that might've been copied from the settings
     out.points = { };
@@ -501,17 +501,17 @@ void drawGrid(const Grid& grid) {
     double ySteps{ (grid.endY - grid.startY)/grid.stepY + 1 };
     std::cout << "=====\n";
     // y goes backwards so it's printed right-side-up
-    for (int y{ ySteps-2 }; y > 0; y--) {
+    for (int y{ (int)ySteps-2 }; y > 0; y--) {
         std::cout << std::setw(5) << y*grid.stepY + grid.startY << ": ";
         for (int x{ 1 }; x < xSteps-2; x++) {
             double actualX{ x*grid.stepX + grid.startX };
             double actualY{ y*grid.stepY + grid.startY };
 
             bool sign{ grid.points.at(x).at(y) >= 0 };
-            bool sT{ grid.points.at(x).at(y+1) >= 0 != sign };
-            bool sB{ grid.points.at(x).at(y-1) >= 0 != sign };
-            bool sR{ grid.points.at(x+1).at(y) >= 0 != sign };
-            bool sL{ grid.points.at(x-1).at(y) >= 0 != sign };
+            bool sT{ (grid.points.at(x).at(y+1) >= 0) != sign };
+            bool sB{ (grid.points.at(x).at(y-1) >= 0) != sign };
+            bool sR{ (grid.points.at(x+1).at(y) >= 0) != sign };
+            bool sL{ (grid.points.at(x-1).at(y) >= 0) != sign };
 
             if (sT + sB + sR + sL > 1) std::cout << '8';
             else if (sT + sB + sR + sL > 0) std::cout << '*';
@@ -524,12 +524,72 @@ void drawGrid(const Grid& grid) {
     std::cout << "=====\n";
 }
 
+bool configure(std::string name, Grid& grid) {
+    if (name == ":window") {
+        std::cout << "Current grid:\n"
+                  << "    startX: " << grid.startX << "\n"
+                  << "    startY: " << grid.startY << "\n"
+                  << "    endX:   " << grid.endX   << "\n"
+                  << "    endY:   " << grid.endY   << "\n"
+                  << "    stepX:  " << grid.stepX  << "\n"
+                  << "    stepY:  " << grid.stepY  << "\n"
+                  << "--\n";
+
+    } else if (name == ":wedit") {
+        configure(":window", grid);
+        grid.startX = getNumber("Enter startX: ");
+        grid.startY = getNumber("Enter startY: ");
+
+        double endX{ getNumber("Enter endX: ") };
+        while (grid.startX >= endX) {
+            std::cout << "endX must be greater than startX!\n";
+            endX = getNumber("Enter endX: ");
+        }
+        grid.endX = endX;
+
+        double endY{ getNumber("Enter endY: ") };
+        while (grid.startY >= endY) {
+            std::cout << "endY must be greater than startY!\n";
+            endY = getNumber("Enter endY: ");
+        }
+        grid.endY = endY;
+
+        grid.stepX = getNumber("Enter stepX: ");
+        grid.stepY = getNumber("Enter stepY: ");
+
+    } else if (name == ":help") {
+        std::cout << "For equation help, see README.md\n"
+                  << "To configure the calculator, enter one of the following:\n"
+                  << "    :help - Help\n"
+                  << "    :window - Show graph details\n"
+                  << "    :wedit - Edit graph details\n"
+                  << "    :quit :q - Exit\n";
+
+    } else if (name == ":quit" || name == ":q") {
+        return true;
+
+    } else {
+        std::cout << "Unknown option\n";
+    }
+
+    return false;
+}
+
 int main() {
     bool verbose{ false };
-    std::cout << "GRAPHING CALCULATOR v2\n";
+    std::cout << "GRAPHING CALCULATOR v2\n"
+              << "Enter an equation, or\n"
+              << ":help for help\n";
+
+    Grid userOptions{ };
 
     while (true) {
         std::string equation{ getLine("Enter an equation: 0 = ") };
+
+        if (equation.starts_with(':')) {
+            if (configure(equation, userOptions)) break;
+            continue;
+        }
 
         bool error{ false };
         std::cout << "(I) Tokenizing equation...\n";
@@ -552,13 +612,9 @@ int main() {
 
         if (verbose) printTree(tree);
 
-        Grid g{ createGrid(tree, { }) };
+        Grid g{ createGrid(tree, userOptions) };
         if (verbose) printGrid(g);
         drawGrid(g);
-
-        // double xValue{ getNumber("Solve for x value: ") };
-
-        // std::cout << "= " << solveTree(tree, {{'x', xValue}}) << "\n";
 
     }
 
