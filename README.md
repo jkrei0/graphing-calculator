@@ -29,8 +29,9 @@ does so in the following order from left to right:
 
 ### Building with g++
 1. make sure you have g++ installed, then run
-2. `g++ new.cpp -o new -std=c++20`
-3. Run `new.exe`
+2. `g++ new.cpp -o new -std=c++20` (g++ v12)
+3. If that doesn't work try `g++ new.cpp -o new -std=c++2a -DSNUMBERS` (for older g++ versions)
+4. Run `new.exe`
 
 ### Building in VSCode
 My .vscode folder is included in the repository.

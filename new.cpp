@@ -9,7 +9,16 @@
 #include <limits>
 #include <iomanip>
 #include <cmath>
+#ifndef SNUMBERS
 #include <numbers>
+#endif
+#ifdef SNUMBERS
+// Older g++ doesn't have <numbers>
+namespace std::numbers {
+    double pi{ 3.1415926535 };
+    double e{ 2.7182818284 };
+}
+#endif
 
 std::string getLine(std::string prompt) {
     std::string input{ };
@@ -72,12 +81,12 @@ struct Token {
 using TokenArr = std::vector<Token>;
 
 struct Grid {
-    int startX{ -10 };
-    int startY{ -10 };
-    int endX{ 10 };
-    int endY{ 10 };
-    double stepX{ 0.5 }; // half b/c cmd characters are ~ half as wide as tall
-    double stepY{ 1 };
+    int startX{ -12 };
+    int startY{ -8 };
+    int endX{ 12 };
+    int endY{ 8 };
+    double stepX{ 0.25 }; // half b/c cmd characters are ~ half as wide as tall
+    double stepY{ 0.5 };
     std::vector<std::vector<double>> points{ };
 };
 
@@ -275,6 +284,9 @@ bool clean(TokenArr& list) {
             // Eg 3+(subtract)4 => 3+(negate)4
             list.at(i).operation = o::negate;
 
+        } else if (list.at(i).operation == o::add && list.at(i-1).operation == o::subtract) {
+            std::cout << "<!> [clean:3] Add operator following subtraction operator. You probably meant a+-b" << i << '\n';
+            return false;
         }
     }
     return true;
@@ -371,7 +383,7 @@ double doFunction(std::string name, double value = 0) {
     else if (name == "ATAN")  return std::atan(value);
     // Roots
     else if (name == "SQRT")  return std::sqrt(value);
-    else if (name == "CBRT")  return std::pow(value, 1/3);
+    else if (name == "CBRT")  return std::pow(value, (1/3));
     // Logarithms
     else if (name == "SETN")  {
         _logbase = value; // Because functions can't take two arguments, 'n'
@@ -492,7 +504,7 @@ void drawGrid(const Grid& grid) {
     std::cout << "=====\n";
     // y goes backwards so it's printed right-side-up
     for (int y{ (int)ySteps-2 }; y > 0; y--) {
-        std::cout << std::setw(5) << y*grid.stepY + grid.startY << ": ";
+        std::cout << std::setw(6) << y*grid.stepY + grid.startY << ": ";
         for (int x{ 1 }; x < xSteps-2; x++) {
             double actualX{ x*grid.stepX + grid.startX };
             double actualY{ y*grid.stepY + grid.startY };
@@ -505,8 +517,8 @@ void drawGrid(const Grid& grid) {
 
             if (sT + sB + sR + sL > 1) std::cout << '8';
             else if (sT + sB + sR + sL > 0) std::cout << '*';
-            else if (actualX == 0) std::cout << '|';
-            else if (actualY == 0) std::cout << '-';
+            else if (std::abs(actualX) < grid.stepX/2) std::cout << '|';
+            else if (std::abs(actualY) < grid.stepY/2) std::cout << '-';
             else std::cout << ' ';
         }
         std::cout << '\n';
