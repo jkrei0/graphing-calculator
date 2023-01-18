@@ -525,8 +525,14 @@ void drawGrid(const Grid& grid) {
     }
     std::cout << "=====\n";
 }
+// Menu commands. Returns true on :quit, false otherwise
+bool menu(std::string name, Grid& grid, TreeItem& tree, std::string last) {
+    struct Save{
+        std::string name;
+        TreeItem tree;
+    };
+    static std::vector<Save> savedEquations{ };
 
-bool configure(std::string name, Grid& grid) {
     if (name == ":window") {
         std::cout << "Current grid:\n"
                   << "    startX: " << grid.startX << "\n"
@@ -538,7 +544,7 @@ bool configure(std::string name, Grid& grid) {
                   << "--\n";
 
     } else if (name == ":wedit") {
-        configure(":window", grid);
+        menu(":window", grid, tree, last);
         grid.startX = getNumber("Enter startX: ");
         grid.startY = getNumber("Enter startY: ");
 
@@ -559,17 +565,143 @@ bool configure(std::string name, Grid& grid) {
         grid.stepX = getNumber("Enter stepX: ");
         grid.stepY = getNumber("Enter stepY: ");
 
+    } else if (name == ":solve" || name == ":v") {
+        if (tree.function == "0") {
+            std::cout << "Enter an equation first, then type :solve\n";
+            return false;
+        }
+        double xValue{ getNumber("x value: ") };
+        double yValue{ getNumber("y value: ") };
+
+        double result{ solveTree(tree, {{'x', xValue}, {'y', yValue}}) };
+
+        std::cout << "Point (" << xValue << ", " << yValue << ") = " << result << "\n";
+
+    } else if (name == ":save" || name == ":s") {
+        if (tree.function == "0") {
+            std::cout << "Enter an equation first, then type :save\n";
+            return false;
+        }
+        savedEquations.push_back({ last, tree });
+
+        std::cout << "Saved equation to slot #" << savedEquations.size()-1 << "\n";
+
+    } else if (name == ":list" || name == ":ls") {
+        if (savedEquations.size() == 0) {
+            std::cout << "No saved equations.\n";
+            return false;
+        }
+        for (std::size_t i{ 0 }; i < savedEquations.size(); i++) { 
+            std::cout << "#" << i << ": " << savedEquations.at(i).name << "\n";
+        }
+
+
+    } else if (name == ":regraph") {
+        std::cout << "Graphing... 0 = " << last << "\n";
+        drawGrid(createGrid(tree, grid));
+
+    } else if (name == ":recall" || name == ":rs") {
+        menu(":list", grid, tree, last);
+        if (savedEquations.size() == 0) { return false; } // Message already sent by :list
+        std::size_t slot{ (std::size_t)getNumber("Enter slot #: ") };
+        if (slot >= savedEquations.size()) {
+            std::cout << "Slot is empty.\n";
+            return false;
+        }
+        Save recalled{ savedEquations.at(slot) };
+
+        menu(":regraph", grid, tree, last);
+
+    } else if (name == ":zoomin" || name == ":i") {
+
+        double two{2}; // b/c stupid int division
+        double xDist{ (grid.endX - grid.startX) / two };
+        double centerX{ xDist + grid.startX };
+        double yDist{ (grid.endY - grid.startY) / two };
+        double centerY{ yDist + grid.startY };
+
+        grid.startX = centerX-(xDist/two);
+        grid.endX = centerX+(xDist/two);
+        grid.startY = centerY-(yDist/two);
+        grid.endY = centerY+(yDist/two);
+        grid.stepX *= 0.5;
+        grid.stepY *= 0.5;
+
+        menu(":regraph", grid, tree, last);
+
+    } else if (name == ":zoomout" || name == ":o") {
+
+        double two{2}; // b/c stupid int division
+        double xDist{ (grid.endX - grid.startX) / two };
+        double centerX{ xDist + grid.startX };
+        double yDist{ (grid.endY - grid.startY) / two };
+        double centerY{ yDist + grid.startY };
+
+        grid.startX = centerX-(xDist*two);
+        grid.endX = centerX+(xDist*two);
+        grid.startY = centerY-(yDist*two);
+        grid.endY = centerY+(yDist*two);
+        grid.stepX *= two;
+        grid.stepY *= two;
+
+        menu(":regraph", grid, tree, last);
+
+    } else if (name == ":center" || name == ":cg") {
+
+        double two{2}; // b/c stupid int division
+        double xDist{ (grid.endX - grid.startX) / two };
+        double yDist{ (grid.endY - grid.startY) / two };
+
+        grid.startX = -(xDist);
+        grid.endX   =  (xDist);
+        grid.startY = -(yDist);
+        grid.endY   =  (yDist);
+
+        menu(":regraph", grid, tree, last);
+
+    } else if (name == ":r" || name == ":l" || name == ":u" || name == ":d") {
+
+        double two{2}; // b/c stupid int division
+        double xDist{ (grid.endX - grid.startX) / two };
+        double yDist{ (grid.endY - grid.startY) / two };
+        if (name == ":r") {
+            grid.startX += xDist * 0.5;
+            grid.endX += xDist * 0.5;
+        } else if (name == ":l") {
+            grid.startX -= xDist * 0.5;
+            grid.endX -= xDist * 0.5;
+        } else if (name == ":u") {
+            grid.startY += yDist * 0.5;
+            grid.endY += yDist * 0.5;
+        } else { // (name == ":d")
+            grid.startY -= yDist * 0.5;
+            grid.endY -= yDist * 0.5;
+        }
+
+        menu(":regraph", grid, tree, last);
+
     } else if (name == ":help") {
+
         std::cout << "For equation help, see README.md\n"
-                  << "To configure the calculator, enter one of the following:\n"
+                  << "Equation commands:\n"
                   << "    :help - Help\n"
-                  << "    :window - Show graph details\n"
-                  << "    :wedit - Edit graph details\n"
+                  << "    :solve :v - Solve the last equation for a value\n"
+                  << "    :regraph - Graph the same equation again\n"
+                  << "    :save :s - Save the last equation\n"
+                  << "    :list :ls - Recall a saved equation\n"
+                  << "    :recall :rs - Recall a saved equation (also lists saved equations)\n"
+                  << "Graph window:\n"
+                  << "    :zoomin :i - Zoom in (*2) in the center of the graph\n"
+                  << "    :zoomout :o - Zoom out (*1/2) in the center of the graph\n"
+                  << "    :l :r :u :d - Scroll left, right, up, down (*1/4)\n"
+                  << "    :center :cg - Center graph at (0, 0)\n"
+                  << "    :window - Show graph window position\n"
+                  << "    :wedit - Edit graph window position\n"
+                  << "Exit calculator:\n"
                   << "    :quit :q - Exit\n";
 
     } else if (name == ":quit" || name == ":q") {
         return true;
-
     } else {
         std::cout << "Unknown option\n";
     }
@@ -584,18 +716,23 @@ int main() {
               << ":help for help\n";
 
     Grid userOptions{ };
+    TokenArr tokenized{ };
+    TreeItem tree{ .function="0" };
+    std::string last{ "" };
 
     while (true) {
         std::string equation{ getLine("Enter an equation: 0 = ") };
 
         if (equation.starts_with(':')) {
-            if (configure(equation, userOptions)) break;
+            if (menu(equation, userOptions, tree, last)) break;
             continue;
         }
+        // After menu(), so menu can see last
+        last = equation;
 
         bool error{ false };
         std::cout << "(I) Tokenizing equation...\n";
-        TokenArr tokenized{ tokenize(equation, error) };
+        tokenized = tokenize(equation, error);
 
         std::cout << "(I) Cleaning equation...\n";
         if (error || !clean(tokenized)) {
@@ -610,7 +747,7 @@ int main() {
         }
 
         std::cout << "(I) Creating tree...\n";
-        TreeItem tree{ buildTree(tokenized) };
+        tree = buildTree(tokenized);
 
         if (verbose) printTree(tree);
 

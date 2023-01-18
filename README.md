@@ -3,8 +3,7 @@ A simple c++ graphing calculator.
 
 ### Version 2 (new.cpp)
 
-Not quite as featureful as the old one, but rewritten with better logic.
-I hope to bring the rest of the features (and maybe more) over eventually.
+Now rewritten with better logic and more features.
 
 When you run, the program will prompt you for an equation. It will accept any implicit equation (eg `0=x-y`) using these symbols:
 - Groups: `(` ... `)`
@@ -14,7 +13,7 @@ When you run, the program will prompt you for an equation. It will accept any im
 - Multiplication also happens when two values are next to each other, eg `xy`, `3x` or even `3 4`
 - Functions: `SIN(x)`, `PI()` - Constants and functions. See FUNCTIONS.md
 - Spaces are ignored
-  
+
 The calculator follows order of operations when solving equations, and
 does so in the following order from left to right:
 - Negation
@@ -24,6 +23,13 @@ does so in the following order from left to right:
 - Division
 - Subtraction
 - Addition
+
+### Features
+- Equation parsing (see above)
+- Equation graphing
+- Common mathematical functions (see FUNCTIONS.md)
+- Save and recall functions for later (lost when program ends, run program and type `:help` for details)
+- Easy graph navigation/zoom (run program and type `:help` for details)
 
 ---
 
