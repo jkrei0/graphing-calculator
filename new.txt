@@ -83,3 +83,52 @@ However, this leaves large open areas in the graph, so if only one of the neighb
 This creates good graphs for most continuous functions, even though it creates somewhat "fat" lines.
 Problems arise with discontinuous functions: Vertical lines are drawn at asymptotes and discontinuities even though they should not be.
 
+=====
+
+Solving For
+[brainstorming]
+
+x+2         => x=-2
+x*2         => x=1/2
+(x-2)(x-4)  => (x=2)*(x=4)    => x=2,4
+x^2         => x=+-0
+2x          => x=1/2
+
+sin(x)(2x)  => (x=0,npi)*(x=0)   => x=0
+sin(x)+2x   => (x=0,npi)+(x=0)   => x=0
+2x+3x       => (x=0)+(x=0)       => x=0
+(x+2)+(x-3) => (x=-2)+(x=3)      => x=-(-2+3)/2 = -1/2  <-< (x=a)+(x=b) => -(a+b)/2 
+3-x         => x=3
+2x-3x       => (x=0)-(x=0)       => x=0
+2x-(x+3)    => (x=0)-(x=-3)      => x=3
+(x-4)-(x+3) => (x=4)-(x=-3)      => UNDEF
+
+x^(1/2)     => 
+
+Special results
+x=UNDEF (undefined)
+x=ANY (any real)
+x=nv (any int n * v)
+x=+-v (positive or negative v)
+x=v,w,... (any of listed values)
+
+x-4-x-3=0
+0x-7=0
+
+2x-x-3=0
+x-3=0
+x=3
+
+x+2+x-3=0
+2x-1=0
+x=-1/2
+
+3-x=0
+x=3
+x-3=0
+x=3
+
+2x-9x=0
+-7x=0
+x=0
+
