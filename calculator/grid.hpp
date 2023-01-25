@@ -63,7 +63,7 @@ void drawGrid(const Grid& grid, bool thick = false) {
             // easy points
             if (grid.points.at(x).at(y) == 0) std::cout << "0";
             // positive side
-            else if (sign && (sTop || sBottom || sRight || sLeft)) std::cout << "O";
+            else if (sign && (sTop || sBottom || sRight || sLeft)) std::cout << "#";
             // negative side only if "thick"
             else if (!sign && (sTop || sBottom || sRight || sLeft) && thick) std::cout << "*";
             else if (std::abs(actualX) < grid.stepX/2) std::cout << '|';
