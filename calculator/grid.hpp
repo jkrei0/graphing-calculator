@@ -42,8 +42,8 @@ void printGrid(const Grid& grid) {
 }
 
 // Draws a grid.
-// IMPORTANT: The grid's settings must actually be the dimensions of the vectors!
-void drawGrid(const Grid& grid) {
+// IMPORTANT: The grid's settings must actually reflect the dimensions of the vectors!
+void drawGrid(const Grid& grid, bool thick = false) {
     double xSteps{ (grid.endX - grid.startX)/grid.stepX + 1 };
     double ySteps{ (grid.endY - grid.startY)/grid.stepY + 1 };
     std::cout << "=====\n";
@@ -55,15 +55,19 @@ void drawGrid(const Grid& grid) {
             double actualY{ y*grid.stepY + grid.startY };
 
             bool sign{ grid.points.at(x).at(y) >= 0 };
-            bool sT{ (grid.points.at(x).at(y+1) >= 0) != sign };
-            bool sB{ (grid.points.at(x).at(y-1) >= 0) != sign };
-            bool sR{ (grid.points.at(x+1).at(y) >= 0) != sign };
-            bool sL{ (grid.points.at(x-1).at(y) >= 0) != sign };
+            bool sTop{ (grid.points.at(x).at(y+1) >= 0) != sign };
+            bool sBottom{ (grid.points.at(x).at(y-1) >= 0) != sign };
+            bool sRight{ (grid.points.at(x+1).at(y) >= 0) != sign };
+            bool sLeft{ (grid.points.at(x-1).at(y) >= 0) != sign };
 
-            if (sT + sB + sR + sL > 1) std::cout << '8';
-            else if (sT + sB + sR + sL > 0) std::cout << '*';
+            // easy points
+            if (grid.points.at(x).at(y) == 0) std::cout << "0";
+            // positive side
+            else if (sign && (sTop || sBottom || sRight || sLeft)) std::cout << "O";
+            // negative side only if "thick"
+            else if (!sign && (sTop || sBottom || sRight || sLeft) && thick) std::cout << "*";
             else if (std::abs(actualX) < grid.stepX/2) std::cout << '|';
-            else if (std::abs(actualY) < grid.stepY/2) std::cout << '-';
+            else if (std::abs(actualY) < grid.stepY/2) std::cout << '_';
             else std::cout << ' ';
         }
         std::cout << '\n';
