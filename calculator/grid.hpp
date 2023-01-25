@@ -72,5 +72,13 @@ void drawGrid(const Grid& grid, bool thick = false) {
         }
         std::cout << '\n';
     }
-    std::cout << "=====\n";
+    std::cout << "        "; // account for y-axis numbering
+    for (int x{ 1 }; x < xSteps-2; x++) {
+        //std::cout << x-4 << ": ";
+        if (x % 10 == 0) {
+            double actualX{ x*grid.stepX + grid.startX };
+            std::cout << std::setw(10) << actualX;
+        }
+    }
+    std::cout << "\n=====\n";
 }

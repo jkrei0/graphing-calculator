@@ -31,6 +31,11 @@ does so in the following order from left to right:
 - Save and recall functions for later (lost when program ends, run program and type `:help` for details)
 - Easy graph navigation/zoom (run program and type `:help` for details)
 
+### Reading the graph
+- `x-` and `y-` axes are drawn on the graph (using `|` and `_`)
+  - *Although, the x-axis location is sometimes misleading*
+- Points exactly on the graph are drawn with `0` and estimated points are drawn with `#`
+
 ---
 
 ### Building with g++
