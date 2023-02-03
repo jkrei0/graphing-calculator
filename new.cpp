@@ -26,12 +26,20 @@ namespace std::numbers {
 #include "calculator/grid.hpp"
 
 // Menu commands. Returns true on :quit, false otherwise
-bool menu(std::string name, Grid& grid, TreeItem& tree, std::string last) {
+bool menu(std::string query, Grid& grid, TreeItem& tree, std::string last, double arg = 0) {
     struct Save{
         std::string name;
         TreeItem tree;
     };
     static std::vector<Save> savedEquations{ };
+
+    const std::regex rQueryName{ "^:[a-z]+" };
+    std::smatch match;
+    if (!std::regex_search(query, match, rQueryName)) {
+        std::cout << "Badly formatted query.\n";
+        return false;
+    }
+    std::string name{ match.str() };
 
     if (name == ":window") {
         std::cout << "Current grid:\n"
@@ -97,6 +105,10 @@ bool menu(std::string name, Grid& grid, TreeItem& tree, std::string last) {
 
 
     } else if (name == ":regraph") {
+        if (tree.function == "0") {
+            std::cout << "No equation to graph.\n";
+            return false;
+        }
         std::cout << "Graphing... 0 = " << last << "\n";
         drawGrid(createGrid(tree, grid));
 
@@ -110,43 +122,51 @@ bool menu(std::string name, Grid& grid, TreeItem& tree, std::string last) {
         }
         Save recalled{ savedEquations.at(slot) };
 
-        menu(":regraph", grid, tree, last);
+        menu(":regraph", grid, recalled.tree, recalled.name);
 
-    } else if (name == ":zoomin" || name == ":i") {
+    } else if (name == ":zi") {
 
-        double two{2}; // b/c stupid int division
-        double xDist{ (grid.endX - grid.startX) / two };
-        double centerX{ xDist + grid.startX };
-        double yDist{ (grid.endY - grid.startY) / two };
-        double centerY{ yDist + grid.startY };
+        menu(":zoom", grid, tree, last, /* Arg */ 0.5);
 
-        grid.startX = centerX-(xDist/two);
-        grid.endX = centerX+(xDist/two);
-        grid.startY = centerY-(yDist/two);
-        grid.endY = centerY+(yDist/two);
-        grid.stepX *= 0.5;
-        grid.stepY *= 0.5;
+    } else if (name == ":zo") {
 
-        menu(":regraph", grid, tree, last);
+        menu(":zoom", grid, tree, last, /* Arg */ 2);
 
-    } else if (name == ":zoomout" || name == ":o") {
+    } else if (name == ":zoom" || name == ":z") {
+
+        double level{ arg };
+        while (level == 0) {
+            level = std::abs(getNumber("Enter zoom level: "));
+        }
 
         double two{2}; // b/c stupid int division
         double xDist{ (grid.endX - grid.startX) / two };
         double centerX{ xDist + grid.startX };
         double yDist{ (grid.endY - grid.startY) / two };
         double centerY{ yDist + grid.startY };
+        
+        double stepRatio{ grid.stepY / grid.stepX };
 
-        grid.startX = centerX-(xDist*two);
-        grid.endX = centerX+(xDist*two);
-        grid.startY = centerY-(yDist*two);
-        grid.endY = centerY+(yDist*two);
-        grid.stepX *= two;
-        grid.stepY *= two;
+        grid.startX = centerX - (xDist*level);
+        grid.endX = centerX + (xDist*level);
+        grid.stepX *= level;
+
+        grid.startY = centerY - (yDist*level);
+        grid.endY = centerY + (yDist*level);
+        grid.stepY = grid.stepX*stepRatio;
+
+        std::cout << level << "l, " << stepRatio << "r \n";
+        menu(":window", grid, tree, last);
+
+        if (grid.startX >= grid.endX || grid.startY >= grid.endY) {
+            grid.endX += 1;
+            grid.endY += 1;
+            std::cout << "Too small of a zoom factor!\n";
+        }
 
         menu(":regraph", grid, tree, last);
 
-    } else if (name == ":center" || name == ":cg") {
+    } else if (name == ":center" || name == ":c") {
 
         double two{2}; // b/c stupid int division
         double xDist{ (grid.endX - grid.startX) / two };
@@ -191,10 +211,11 @@ bool menu(std::string name, Grid& grid, TreeItem& tree, std::string last) {
                   << "    :list :ls - Recall a saved equation\n"
                   << "    :recall :rs - Recall a saved equation (also lists saved equations)\n"
                   << "Graph window:\n"
-                  << "    :zoomin :i - Zoom in (*2) in the center of the graph\n"
-                  << "    :zoomout :o - Zoom out (*1/2) in the center of the graph\n"
+                  << "    :zoom :z - Zoom to a specified amount at the center of the graph\n"
+                  << "    :zi - Zoom in (*2) in the center of the graph\n"
+                  << "    :zo - Zoom out (*0.5) in the center of the graph\n"
                   << "    :l :r :u :d - Scroll left, right, up, down (*1/4)\n"
-                  << "    :center :cg - Center graph at (0, 0)\n"
+                  << "    :center :c - Center graph at (0, 0)\n"
                   << "    :window - Show graph window position\n"
                   << "    :wedit - Edit graph window position\n"
                   << "Exit calculator:\n"

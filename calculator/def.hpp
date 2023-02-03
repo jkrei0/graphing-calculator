@@ -31,10 +31,10 @@ struct Token {
 using TokenArr = std::vector<Token>;
 
 struct Grid {
-    int startX{ -12 };
-    int startY{ -8 };
-    int endX{ 12 };
-    int endY{ 8 };
+    double startX{ -12 };
+    double startY{ -8 };
+    double endX{ 12 };
+    double endY{ 8 };
     double stepX{ 0.25 }; // half b/c cmd characters are ~ half as wide as tall
     double stepY{ 0.5 };
     std::vector<std::vector<double>> points{ };

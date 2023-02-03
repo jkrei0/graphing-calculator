@@ -49,7 +49,6 @@ void drawGrid(const Grid& grid, bool thick = false) {
     std::cout << "=====\n";
     // y goes backwards so it's printed right-side-up
     for (int y{ (int)ySteps-2 }; y > 0; y--) {
-        std::cout << std::setw(6) << y*grid.stepY + grid.startY << ": ";
         for (int x{ 1 }; x < xSteps-2; x++) {
             double actualX{ x*grid.stepX + grid.startX };
             double actualY{ y*grid.stepY + grid.startY };
@@ -70,9 +69,11 @@ void drawGrid(const Grid& grid, bool thick = false) {
             else if (std::abs(actualY) < grid.stepY/2) std::cout << '_';
             else std::cout << ' ';
         }
-        std::cout << '\n';
+        
+        std::cout << " :" << std::setprecision(8) << y*grid.stepY + grid.startY
+                  << '\n';
     }
-    std::cout << "        "; // account for y-axis numbering
+    std::cout << "          "; // account for y-axis numbering
     for (int x{ 1 }; x < xSteps-2; x++) {
         //std::cout << x-4 << ": ";
         if (x % 10 == 0) {
