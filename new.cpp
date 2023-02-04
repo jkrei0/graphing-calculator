@@ -42,7 +42,7 @@ bool menu(std::string query, Grid& grid, TreeItem& tree, std::string last, doubl
     std::string name{ match.str() };
 
     if (name == ":window") {
-        std::cout << "Current grid:\n"
+        std::cout << "Current window:\n"
                   << "    startX: " << grid.startX << "\n"
                   << "    startY: " << grid.startY << "\n"
                   << "    endX:   " << grid.endX   << "\n"
@@ -121,6 +121,8 @@ bool menu(std::string query, Grid& grid, TreeItem& tree, std::string last, doubl
             return false;
         }
         Save recalled{ savedEquations.at(slot) };
+
+        tree = recalled.tree;
 
         menu(":regraph", grid, recalled.tree, recalled.name);
 
@@ -208,8 +210,8 @@ bool menu(std::string query, Grid& grid, TreeItem& tree, std::string last, doubl
                   << "    :solve :v - Solve the last equation for a value\n"
                   << "    :regraph - Graph the same equation again\n"
                   << "    :save :s - Save the last equation\n"
-                  << "    :list :ls - Recall a saved equation\n"
-                  << "    :recall :rs - Recall a saved equation (also lists saved equations)\n"
+                  << "    :list :ls - List saved equations\n"
+                  << "    :recall :rs - Recall a saved equation\n"
                   << "Graph window:\n"
                   << "    :zoom :z - Zoom to a specified amount at the center of the graph\n"
                   << "    :zi - Zoom in (*2) in the center of the graph\n"
