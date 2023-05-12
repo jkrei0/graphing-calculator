@@ -6,7 +6,7 @@ TokenArr tokenize(std::string equation, bool& error) {
     TokenArr out{ };
     const std::regex rGroup{ "^\\(" };
     const std::regex rNumber{ "^(\\d+(\\.\\d+)?|\\.\\d+)" };
-    const std::regex rOperator{ "^(\\+|-|\\*|\\/|\\^)" };
+    const std::regex rOperator{ "^(\\+|-|\\*|\\/|\\^|%)" };
     const std::regex rVariable{ "^[a-z]" };
     const std::regex rFunction{ "^[A-Z]+" };
     const std::regex rWhitespace{ "^ +" };
@@ -26,6 +26,7 @@ TokenArr tokenize(std::string equation, bool& error) {
                 case '*': newTk.operation = o::multiply; break;
                 case '/': newTk.operation = o::divide;   break;
                 case '^': newTk.operation = o::exponent; break;
+                case '%': newTk.operation = o::modulo; break;
                 default:
                     std::cout << "<!> [tokenize:0] Unknown operator " << match.str() << "\n";
                     error = true;

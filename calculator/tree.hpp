@@ -10,6 +10,7 @@ TreeItem buildTree(const TokenArr& list) {
     std::vector<o> orderedOperations{ 
         o::add,
         o::subtract,
+        o::modulo,
         o::multiply,
         o::divide,
         o::exponent,

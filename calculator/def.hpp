@@ -11,7 +11,8 @@ enum class o {
     multiply,
     divide,
     exponent,
-    function
+    function,
+    modulo
 };
 enum class t {
     none,
@@ -69,6 +70,7 @@ std::string oAsString(o name) {
         case o::add: return "add";
         case o::subtract: return "subtract";
         case o::negate: return "negate";
+        case o::modulo: return "modulo";
         case o::multiply: return "multiply";
         case o::divide: return "divide";
         case o::exponent: return "exponent";

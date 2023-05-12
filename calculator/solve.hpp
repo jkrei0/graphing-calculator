@@ -1,10 +1,7 @@
 #pragma once
 #include "tree.hpp"
 
-double doFunction(std::string name, double value = 0) {
-    static double _logbase{ 2 };
-    static double _modbase{ 3 };
-    // No NTHROOT function because you can do that with x^(1/y)
+double doFunction(std::string name, double leftValue = 0, double value = 0) {
     // Trigonometry
     if      (name == "SIN")   return std::sin(value);
     else if (name == "ASIN")  return std::asin(value);
@@ -13,16 +10,14 @@ double doFunction(std::string name, double value = 0) {
     else if (name == "TAN")   return std::tan(value);
     else if (name == "ATAN")  return std::atan(value);
     // Roots
+    // No NTHROOT function because you can do that with x^(1/y)
     else if (name == "SQRT")  return std::sqrt(value);
     else if (name == "CBRT")  return std::pow(value, (1/3));
     // Logarithms
-    else if (name == "SETN")  {
-        _logbase = value; // Because functions can't take two arguments, 'n'
-        return 0;         // must be set before using LOGN
-    }
+    // No LOGBASE function because you can do that with change-of-base
     else if (name == "LOG")   return std::log10(value);
-    else if (name == "LOGE")  return std::log(value);
-    else if (name == "LOGN")  return std::log(value) / std::log(_logbase);
+    else if (name == "LB")    return std::log2(value);
+    else if (name == "LN")    return std::log(value);
     // Etc
     else if (name == "ABS" && value >= 0)  return value;
     else if (name == "ABS" && value < 0)   return -value;
@@ -30,12 +25,8 @@ double doFunction(std::string name, double value = 0) {
     else if (name == "SIGN" && value == 0) return 0;
     else if (name == "SIGN" && value < 0)  return -1;
     // Modulo
+    // NOTE / TODO - Remove setter functions
     else if (name == "EVEN")  return std::fmod(value, 2);
-    else if (name == "SETM")  {
-        _modbase = value; // Because functions can't take two arguments, 'n'
-        return 0;         // must be set before using LOGN
-    }
-    else if (name == "MOD")  return std::fmod(value, _modbase);
     // Math constants
     else if (name == "PI" && value != 0)  return std::numbers::pi * value;
     else if (name == "PI")    return std::numbers::pi;
@@ -54,8 +45,9 @@ double solveOperation(o oper, double left, double right, std::string function = 
         case o::negate: return -right;
         case o::multiply: return left * right;
         case o::divide: return left / right;
+        case o::modulo: return std::fmod(left, right);
         case o::exponent: return std::pow(left, right);
-        case o::function: return doFunction(function, right);
+        case o::function: return doFunction(function, left, right);
         case o::none:
         default: std::cout << "<?> [solveOperation:0] Unknown operation " << oAsString(oper) << ".\n"; return right;
     }

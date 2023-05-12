@@ -9,10 +9,12 @@ When you run, the program will prompt you for an equation. It will accept any im
 - Groups: `(` ... `)`
 - Variables: `x`, `y`, any lowercase letter a-z
 - Numbers: `123`, `123.456`, `0.123`, `.123`, `123.0`
-- Operators: `+`, `-` (subtract and negate), `*`, `/`, `^` (exponent)
+- Operators: `+`, `-` (subtract and negate), `*`, `/`, `^` (exponent), `%` (modulo*)
 - Multiplication also happens when two values are next to each other, eg `xy`, `3x` or even `3 4`
 - Functions: `SIN(x)`, `PI()` - Constants and functions. See FUNCTIONS.md
 - Spaces are ignored
+
+\**Modulo is defined using the c++ std::fmod function*
 
 The calculator follows order of operations when solving equations, and
 does so in the following order from left to right:
@@ -21,6 +23,7 @@ does so in the following order from left to right:
 - Exponentation
 - Multiplication
 - Division
+- Modulo
 - Subtraction
 - Addition
 
